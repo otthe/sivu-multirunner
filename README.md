@@ -19,3 +19,18 @@ sudo nano /etc/hosts
 
 http://site1.test:3000
 http://site2.test:3000
+
+# ideas:
+
+### should the daemon have internal api for registering sites??? something like:
+```
+POST /__admin/register
+POST /__admin/unregister
+POST /__admin/reload"
+```
+``` 
+"fetch("http://localhost:4000/__admin/register", {
+  method: "POST",
+  body: JSON.stringify({ host, projectDir })
+});"
+```
