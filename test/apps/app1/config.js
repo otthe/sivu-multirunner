@@ -12,7 +12,7 @@ export const config = {
   force_csrf_middleware: true,
   autoescape_html: true,
   allow_pretty_urls: true,
-  session_secret: process.env.SESSION_SECRET || "thisismysecret",
+  session_secret: "thisismysecret",
   cookie_secure: false, // requires https
   sqlite_wal_mode: true
 };

@@ -118,8 +118,9 @@ function createSiteHandler(site) {
   );
 
   // Catch-all route for templates
-  //router.get("*", async (req, res) => {
-  router.use(async (req, res) => {
+  // https://www.reddit.com/r/node/comments/1nf16by/unable_to_use_appall_in_my_code_app_crash_in_esm/
+  // https://expressjs.com/en/guide/migrating-5.html#path-syntax
+  router.get('/*splat', async (req, res) => {
     try {
       const requested = resolveGetTemplatePath(req.path, site.config);
       const rel = validatePublicTemplateRequest(requested);
@@ -141,6 +142,7 @@ app.use(express.json());
 
 app.use((req, res, next) => {
   const host = req.headers.host?.split(":")[0];
+  console.log(host);
   const site = siteRegistry.get(host);
 
   if (!site) {
