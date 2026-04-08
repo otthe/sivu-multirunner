@@ -68,6 +68,8 @@ app.use((req, res, next) => {
     return res.status(404).send("Unknown site");
   }
 
+  req.site = site;
+
   return site.handler(req, res, next);
 });
 

@@ -31,7 +31,7 @@ export function createSiteHandler(site) {
       index: false,
     })
   );
-
+  
   // Body parsing
   router.use(express.urlencoded({ extended: true }));
   router.use(express.json());
@@ -53,12 +53,20 @@ export function createSiteHandler(site) {
   // Catch-all route for templates
   // https://www.reddit.com/r/node/comments/1nf16by/unable_to_use_appall_in_my_code_app_crash_in_esm/
   // https://expressjs.com/en/guide/migrating-5.html#path-syntax
-  router.get('/{*splat}', async (req, res) => {
+  // should it call next? prolly not
+  router.use(async (req, res) => {
+  //router.get('/{*splat}', async (req, res) => {
     try {
       const requested = resolveGetTemplatePath(req.path, site.config);
       const rel = validatePublicTemplateRequest(requested);
 
-      console.log(requested);
+      //makes two requests?
+      // console.log("requset!");
+      // console.log(req.site);
+
+      console.log(req.site);
+      console.log("HANDLER HIT", req.method, req.url);
+      // console.log(req);
 
       // TODO: render
       res.send(`Render ${rel} for ${site.host}`);
