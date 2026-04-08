@@ -10,6 +10,7 @@ import morgan from "morgan";
 
 import { resolveGetTemplatePath } from "../utils/path.js";
 import { isTimingSafeEqual } from "../utils/string.js";
+import { renderTemplateByName } from "../sivu/renderer.js";
 
 function isJsonRequest(req) {
   return req.is("application/json");
@@ -125,11 +126,9 @@ export function createSiteHandler(site) {
   router.use(morgan('combined'));
 
   // log to file
-  //const logPath = path.join(process.cwd(), site.config.log_dir_location, 'access.log');
   const logPath = path.join(site.logDir, 'access.log');
   const accessLogStream = fs.createWriteStream(logPath, { flags: 'a' });
   router.use(morgan('combined', { stream: accessLogStream }));
-
 
   // Sessions (per-site config)
   router.use(
@@ -149,19 +148,16 @@ export function createSiteHandler(site) {
   // https://www.reddit.com/r/node/comments/1nf16by/unable_to_use_appall_in_my_code_app_crash_in_esm/
   // https://expressjs.com/en/guide/migrating-5.html#path-syntax
   // should it call next()? prolly not
-  router.use(async (req, res) => {
-  //router.get('/{*splat}', async (req, res) => {
+  //router.use(async (req, res) => {
+  router.get('/{*splat}', async (req, res) => {
     try {
       const requested = resolveGetTemplatePath(req.path, site.config);
       const rel = validatePublicTemplateRequest(requested);
 
-      //makes two requests?
-      // console.log("requset!");
-      // console.log(req.site);
+      const config = site.config;
+      const projectDir = site.projectDir
 
-      console.log(req.site);
-      console.log("HANDLER HIT", req.method, req.url);
-      // console.log(req);
+      const result = await renderTemplateByName(rel, req, { projectDir, config });
 
       // TODO: render
       //res.send(`Render ${rel} for ${site.host}`);
