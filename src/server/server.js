@@ -7,8 +7,6 @@ import fs from "node:fs";
 import { pathToFileURL } from "node:url";
 import { createSiteHandler } from "./site-handler.js";
 import { siteRegistry } from "./registry.js";
-// import helmet from "helmet";
-// import morgan from "morgan";
 
 const sites = {
   "app1.test": {
@@ -41,9 +39,12 @@ async function loadSites(sitesConfig) {
         host,
         ...site,
         config,
+        rootDir: path.join(site.projectDir, config.template_dir_location),
         publicDir: path.join(site.projectDir, config.public_dir_location),
         logDir: path.join(site.projectDir, config.log_dir_location),
         dataDir: path.join(site.projectDir, config.data_dir_location),
+        scriptCache: new Map(),
+        templateCache: new Map()
       };      
 
       siteInfo.handler = createSiteHandler(siteInfo);

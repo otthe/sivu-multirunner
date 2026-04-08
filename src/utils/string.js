@@ -6,3 +6,7 @@ export function isTimingSafeEqual(a, b) {
   if (aBuf.length !== bBuf.length) return false;
   return crypto.timingSafeEqual(aBuf, bBuf);
 }
+
+export function stripLeadingSlashes(p) {
+  return String(p || "").replace(/^\/+/, "");
+}
