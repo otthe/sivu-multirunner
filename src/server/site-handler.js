@@ -161,7 +161,8 @@ export function createSiteHandler(site) {
 
       // TODO: render
       //res.send(`Render ${rel} for ${site.host}`);
-      res.send(JSON.stringify(req.session));
+      //res.send(JSON.stringify(req.session));
+      res.send(result.body);
     } catch (err) {
       console.error(err);
       res.status(404).send("Not found");

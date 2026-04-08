@@ -5,7 +5,7 @@ export const config = {
   data_dir_location: "data",
   log_dir_location: "log",
   root_file: "index.sivu",
-  use_layout_file: true,
+  use_layout_file: false,
   public_asset_caching_time: "1d",
   cache_compiled_templates: false, // toggle on for smaller CPU cost
   cache_scripts: false,

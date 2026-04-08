@@ -44,7 +44,8 @@ async function loadSites(sitesConfig) {
         logDir: path.join(site.projectDir, config.log_dir_location),
         dataDir: path.join(site.projectDir, config.data_dir_location),
         scriptCache: new Map(),
-        templateCache: new Map()
+        templateCache: new Map(),
+        templateMeta: new Map(),
       };      
 
       siteInfo.handler = createSiteHandler(siteInfo);
