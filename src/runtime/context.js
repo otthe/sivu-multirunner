@@ -5,6 +5,7 @@ import { pathToFileURL } from "node:url";
 import Database from "better-sqlite3";
 
 import { TemplateExit, TemplateRedirect, TemplateResponse } from "../utils/error.js";
+import { createConsole } from "./console.js";
 
 function requireRuntime(runtime) {
   if (!runtime || typeof runtime !== "object") {
@@ -381,7 +382,7 @@ export function createContext(req = {}, templatePath, runtime) {
     __dirname: templateDir,
     __filename: templatePath,
 
-    console, // AHA! so this needs to be shared instance between app and lib
+    console: createConsole(req.site.host),
 
     $dump: dump,
     $escapeHtml: escapeHtml,
