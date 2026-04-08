@@ -5,28 +5,9 @@ import express from "express";
 import session from "express-session";
 import crypto from "node:crypto";
 import fs from "node:fs";
+import { resolveGetTemplatePath } from "../utils/path.js";
 
-function resolveGetTemplatePath(reqPath, config) {
-  const clean = String(reqPath || "/").split("?")[0];
-
-  if (clean === "/" || clean === "") {
-    return config.root_file || "index.sivu";
-  }
-
-  let rel = clean.replace(/^\/+/, "").replace(/\/+$/, "");
-
-  if (!config.allow_pretty_urls) {
-    return rel;
-  }
-
-  if (rel.endsWith(".sivu")) {
-    return rel;
-  }
-
-  return `${rel}.sivu`;
-}
-
-function validatePublicTemplateRequest(rel) {
+export function validatePublicTemplateRequest(rel) {
   if (!rel.endsWith(".sivu")) {
     throw new Error("Not a sivu file");
   }
