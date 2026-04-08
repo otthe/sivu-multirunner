@@ -1,0 +1,1 @@
+export const siteRegistry = new Map();

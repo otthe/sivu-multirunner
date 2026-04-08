@@ -1,6 +1,10 @@
-//devmode ???
+import { sivuConfig } from "../config.js";
+import { startServer } from "../server/server.js";
 
-
-export function run() {
-  console.log("dev");
+export async function run() {
+  const config = {
+    port: sivuConfig.server.devPort,
+    env: 'DEVELOPMENT'
+  }
+  await startServer(config);
 }
