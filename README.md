@@ -34,3 +34,11 @@ POST /__admin/reload"
   body: JSON.stringify({ host, projectDir })
 });"
 ```
+
+#### https://dev.to/erinbush/npm-linking-and-unlinking-2h1g
+
+
+
+#### symlink clean:
+rm -f $(npm bin -g)/sivu
+ls $(npm bin -g)
