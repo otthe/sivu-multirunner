@@ -2,4 +2,5 @@
 
 <?sivu
   $echo($dump($_SESSION));
+  $echo($dump($_ENV));
 ?>
