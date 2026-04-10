@@ -4,22 +4,8 @@ import crypto from "node:crypto";
 import { pathToFileURL } from "node:url";
 import Database from "better-sqlite3";
 
-import { TemplateExit, TemplateRedirect, TemplateResponse } from "../utils/error.js";
+import { requireRuntime, TemplateExit, TemplateRedirect, TemplateResponse } from "../utils/error.js";
 import { createConsole } from "./console.js";
-
-function requireRuntime(runtime) {
-  if (!runtime || typeof runtime !== "object") {
-    throw new Error("createContext requires runtime = { projectDir, config }");
-  }
-  const { projectDir, config } = runtime;
-  if (!projectDir || typeof projectDir !== "string") {
-    throw new Error("runtime.projectDir is required");
-  }
-  if (!config || typeof config !== "object") {
-    throw new Error("runtime.config is required");
-  }
-  return { projectDir, config };
-}
 
 function getDataDir(projectDir, config) {
   // default to "<projectDir>/data"
@@ -28,7 +14,7 @@ function getDataDir(projectDir, config) {
 }
 
 export function createContext(req = {}, templatePath, runtime) {
-  const { projectDir, config } = requireRuntime(runtime);
+  const { projectDir, config } = requireRuntime(runtime, "createContext");
   const DATA_DIR = getDataDir(projectDir, config);
 
   const openedDBs = [];

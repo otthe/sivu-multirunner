@@ -23,3 +23,20 @@ export class TemplateResponse extends Error {
     this.body = body;
   }
 }
+
+export function requireRuntime(runtime, callingFunc) {
+  if (!runtime || typeof runtime !== "object") {
+    throw new Error(`${callingFunc} requires runtime = { projectDir, config }`);
+  }
+  const { projectDir, config } = runtime;
+  if (!projectDir || typeof projectDir !== "string") {
+    throw new Error("runtime.projectDir is required");
+  }
+  if (!config || typeof config !== "object") {
+    throw new Error("runtime.config is required");
+  }
+  if (!config.template_dir_location) {
+    throw new Error("config.template_dir_location is required");
+  }
+  return { projectDir, config };
+}

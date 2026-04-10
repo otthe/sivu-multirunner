@@ -5,7 +5,7 @@ import crypto from "node:crypto";
 
 import { createContext } from "../runtime/context.js";
 import { siteRegistry } from "../server/registry.js";
-import { TemplateExit, TemplateRedirect, TemplateResponse } from "../utils/error.js";
+import { requireRuntime, TemplateExit, TemplateRedirect, TemplateResponse } from "../utils/error.js";
 import { resolveIncludePath, resolveUnderTemplateDir } from "../utils/path.js";
 import { stripLeadingSlashes } from "../utils/string.js";
 import { compileTemplateString } from "./parser.js";
@@ -15,23 +15,6 @@ const LAYOUT_FILE = "_layout.sivu";
 const YIELD_MARKER_RE = /<\?=\s*\$yield\s*\(\s*\)\s*;?\s*\?>/;
 const MAX_COMPILED = 500; // strings
 const MAX_SCRIPTS  = 200; // vm.Script objects
-
-function requireRuntime(runtime) {
-  if (!runtime || typeof runtime !== "object") {
-    throw new Error("renderTemplateByName requires runtime = { projectDir, config }");
-  }
-  const { projectDir, config } = runtime;
-  if (!projectDir || typeof projectDir !== "string") {
-    throw new Error("runtime.projectDir is required");
-  }
-  if (!config || typeof config !== "object") {
-    throw new Error("runtime.config is required");
-  }
-  if (!config.template_dir_location) {
-    throw new Error("config.template_dir_location is required");
-  }
-  return { projectDir, config };
-}
 
 /**
  * Expand template source by inlining included templates recursively.
@@ -80,7 +63,7 @@ async function expandTemplateSource(TEMPLATE_DIR, filePath, stack = []) {
 }
 
 export async function renderTemplateByName(templateName, req = {}, runtime) {
-  const {projectDir, config} = requireRuntime(runtime);
+  const {projectDir, config} = requireRuntime(runtime, "renderTemplateByName");
   const templateCache = siteRegistry.get(req.site.host).templateCache;
   const scriptCache = siteRegistry.get(req.site.host).scriptCache;
   const TEMPLATE_DIR = req.site.rootDir;
@@ -88,7 +71,9 @@ export async function renderTemplateByName(templateName, req = {}, runtime) {
 
   const pagePath = resolveUnderTemplateDir(TEMPLATE_DIR, templateName);
 
+  const benchmarkContext = performance.now();
   const { context, cleanup } = createContext(req, pagePath, runtime);
+  console.log(`context creation took: ${performance.now() - benchmarkContext}`);
 
   try {
     // 1) Expand (inline) the page first
