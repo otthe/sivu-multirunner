@@ -130,20 +130,6 @@ export function createSiteHandler(site) {
   const accessLogStream = fs.createWriteStream(logPath, { flags: 'a' });
   router.use(morgan('combined', { stream: accessLogStream }));
 
-  // Sessions (per-site config)
-  router.use(
-    session({
-      secret: site.config.session_secret,
-      resave: false,
-      saveUninitialized: false,
-      cookie: {
-        httpOnly: true,
-        sameSite: "lax",
-        secure: Boolean(site.config.cookie_secure),
-      },
-    })
-  );
-
   // Catch-all route for templates
   // https://www.reddit.com/r/node/comments/1nf16by/unable_to_use_appall_in_my_code_app_crash_in_esm/
   // https://expressjs.com/en/guide/migrating-5.html#path-syntax
@@ -159,9 +145,6 @@ export function createSiteHandler(site) {
 
       const result = await renderTemplateByName(rel, req, { projectDir, config });
 
-      // TODO: render
-      //res.send(`Render ${rel} for ${site.host}`);
-      //res.send(JSON.stringify(req.session));
       res.send(result.body);
     } catch (err) {
       console.error(err);

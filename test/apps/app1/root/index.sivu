@@ -10,4 +10,7 @@
 
 
   $echo($dump($_ENV));
+
+  $sessionRegenerate();
+  $echo($dump($_SESSION));
 ?>

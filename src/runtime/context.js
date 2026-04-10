@@ -7,15 +7,10 @@ import Database from "better-sqlite3";
 import { requireRuntime, TemplateExit, TemplateRedirect, TemplateResponse } from "../utils/error.js";
 import { createConsole } from "./console.js";
 
-function getDataDir(projectDir, config) {
-  // default to "<projectDir>/data"
-  const rel = config.data_dir_location ?? "data";
-  return path.resolve(projectDir, rel);
-}
-
 export function createContext(req = {}, templatePath, runtime) {
   const { projectDir, config } = requireRuntime(runtime, "createContext");
-  const DATA_DIR = getDataDir(projectDir, config);
+  //const DATA_DIR = getDataDir(projectDir, config);
+  const DATA_DIR = req.site.dataDir;
 
   const openedDBs = [];
 

@@ -7,8 +7,12 @@ export function createConsole(host) {
 
   methods.forEach((method) => {
     customConsole[method] = (...args) => {
-      global.console[method](`[${host}]`, ...args);
-      global.console[method](...args);
+      if (method === "table") {
+        global.console[method](`[${host}]`);
+        global.console[method](...args);
+      } else {
+        global.console[method](`[${host}]`, ...args);
+      }
     };
   });
 
