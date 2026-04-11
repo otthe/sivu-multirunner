@@ -8,9 +8,10 @@ import session from "express-session";
 import helmet from "helmet";
 import morgan from "morgan";
 
-import { resolveGetTemplatePath } from "../utils/path.js";
+import { actionNameFromPage, resolveGetTemplatePath } from "../utils/path.js";
 import { isTimingSafeEqual } from "../utils/string.js";
 import { renderTemplateByName } from "../sivu/renderer.js";
+import { TemplateExit, TemplateRedirect, TemplateResponse } from "../utils/error.js";
 
 function isJsonRequest(req) {
   return req.is("application/json");
@@ -27,6 +28,16 @@ export function validatePublicTemplateRequest(rel) {
   }
 
   return rel;
+}
+
+function sendResult(res, r) {
+  res.status(r.status || 200);
+
+  for (const [k, v] of Object.entries(r.headers || {})) {
+    res.setHeader(k, v);
+  }
+
+  return res.send(r.body ?? "");
 }
 
 export function createSiteHandler(site) {
@@ -91,9 +102,12 @@ export function createSiteHandler(site) {
   
           imgSrc: ["'self'", "data:"],
           connectSrc: ["'self'"],
+
+          formAction: ["'self'"],
   
           objectSrc: ["'none'"],
-          upgradeInsecureRequests: [],
+          upgradeInsecureRequests: null,
+          // upgradeInsecureRequests: [],
         },
       },
     })
@@ -113,6 +127,9 @@ export function createSiteHandler(site) {
       ) {
         const token = req.body?._csrf;
         const expected = req.session?._csrfToken;
+
+        console.log("token:");
+        console.log(token);
 
         if (!isTimingSafeEqual(String(token || ""), String(expected || ""))) {
           return res.status(403).send("Invalid CSRF token");
@@ -144,13 +161,70 @@ export function createSiteHandler(site) {
       const projectDir = site.projectDir
 
       const result = await renderTemplateByName(rel, req, { projectDir, config });
-
-      res.send(result.body);
-    } catch (err) {
-      console.error(err);
-      res.status(404).send("Not found");
+      console.log("req");
+      console.log(req.socket.localPort);
+      sendResult(res, result);
+    } catch (error) {
+      const msg = String(error?.message || "");
+      if (error instanceof TemplateResponse) {
+        for (const [k, v] of Object.entries(error.headers || {})) res.setHeader(k, v);
+        return res.status(error.status || 200).send(error.body ?? "");
+      }
+      if (msg.includes("Partial") || msg.includes("traversal") || msg.includes("Not a sivu")) {
+        return res.status(403).send(APP_403_MESSAGE);
+      }
+      console.error(error);
+      return res.status(404).send(APP_404_MESSAGE);
     }
   });
+
+  const sivuRoute=/^\/.+\.sivu$/;
+
+  router.post(sivuRoute, async (req, res) => {
+    try {
+      // 1) validate requested public .sivu page (not underscore)
+      const relPage = validatePublicTemplateRequest(req.path);
+     
+      // 2) map to underscore action
+      const relAction = actionNameFromPage(relPage);
+
+      const config =site.config;
+      const projectDir = site.projectDir;
+
+      console.log(relAction);
+
+      const result = await renderTemplateByName(relAction, req, { projectDir, config });
+
+      sendResult(res, result);
+
+    } catch (err) {
+      if (err instanceof TemplateRedirect) {
+        return res.redirect(err.status, err.location);
+      }
+      if (err instanceof TemplateExit) {
+        return res.send(String(err.message || ""));
+      }
+
+      if (err instanceof TemplateResponse) {
+        for (const [k, v] of Object.entries(err.headers || {})) res.setHeader(k, v);
+        return res.status(err.status || 200).send(err.body ?? "");
+      }
+
+      const msg = String(err?.message || "");
+      if (msg.includes("Partial") || msg.includes("traversal") || msg.includes("Not a sivu")) {
+        return res.status(403).send(APP_403_MESSAGE);
+      }
+
+      console.error(err);
+      return res.status(404).send(APP_404_MESSAGE);
+    }
+  });
+
+
+  router.use((_req, res) => {
+    res.status(404).send("404 Not found!");
+  });
+
 
   return router;
 }

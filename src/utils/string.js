@@ -1,3 +1,5 @@
+import crypto from "node:crypto";
+
 export function isTimingSafeEqual(a, b) {
   // constant-time compare for strings (best-effort)
   if (typeof a !== "string" || typeof b !== "string") return false;

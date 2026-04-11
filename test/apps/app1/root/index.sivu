@@ -11,6 +11,11 @@
 
   $echo($dump($_ENV));
 
-  $sessionRegenerate();
+  //$sessionRegenerate();
   $echo($dump($_SESSION));
 ?>
+
+<form method="POST" action="/post.sivu">
+  <?= $csrf($_SESSION) ?>
+  <button type="submit">Send</button>
+</form>

@@ -1,16 +1,15 @@
-# todo:
-- proper dispatching
-- site registry
-- isolation
-- daemon mode (later?)
----
-1. server should serve the files
-2. site registry lookup
-3. site config load
-4. route dispatching
+# weird bugs and todo
+- session regenerate call ruins the csrf helper which is set during context creation--> can this be solved via some post-render callback?
+- need to delve deeper into helmet and test in prod if `upgradeInsecureRequests` causes any problem
+- related to helmet --> the whole end-user `config.js` should prolly use premade environments for caches etc and (allow user defined csp settings on the other hand)
 
+# scripts and stuff:
 
-# other:
+#### https://dev.to/erinbush/npm-linking-and-unlinking-2h1g
+
+#### symlink clean:
+rm -f $(npm bin -g)/sivu
+ls $(npm bin -g)
 
 sudo nano /etc/hosts
 
@@ -19,6 +18,8 @@ sudo nano /etc/hosts
 
 http://site1.test:3000
 http://site2.test:3000
+
+
 
 # ideas:
 
@@ -35,10 +36,3 @@ POST /__admin/reload"
 });"
 ```
 
-#### https://dev.to/erinbush/npm-linking-and-unlinking-2h1g
-
-
-
-#### symlink clean:
-rm -f $(npm bin -g)/sivu
-ls $(npm bin -g)

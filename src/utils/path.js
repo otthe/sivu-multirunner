@@ -45,3 +45,11 @@ export function resolveIncludePath(TEMPLATE_DIR, baseDir, requested) {
   }
   return target;
 }
+
+export function actionNameFromPage(relPagePath) {
+  // relPagePath like "add_user.sivu" or "users/add_user.sivu"
+  const dir = path.dirname(relPagePath);
+  const base = path.basename(relPagePath);
+  const actionBase = "_" + base;
+  return dir === "." ? actionBase : path.join(dir, actionBase);
+}

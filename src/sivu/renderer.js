@@ -136,7 +136,7 @@ export async function renderTemplateByName(templateName, req = {}, runtime) {
       compiled = compileTemplateString(finalSource);
     }
 
-    console.log(compiled);
+    //console.log(compiled);
 
     const t2Template = performance.now();
     //console.log(`Compiling template for ${cacheKey} took ${t2Template - t1Template} milliseconds! `);

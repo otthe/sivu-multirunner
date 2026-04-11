@@ -1,0 +1,4 @@
+<?sivu
+console.log("lol1");
+$redirect("/");
+?>

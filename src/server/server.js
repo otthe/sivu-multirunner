@@ -9,6 +9,9 @@ import { createSiteHandler } from "./site-handler.js";
 import { siteRegistry } from "./registry.js";
 
 const sites = {
+  "localhost": {
+    projectDir: "/home/null/Desktop/projects/sivu-multirunner/test/apps/app1/",
+  },
   "app1.test": {
     projectDir: "/home/null/Desktop/projects/sivu-multirunner/test/apps/app1/",
   },
@@ -18,6 +21,7 @@ const sites = {
 };
 
 const app = express();
+app.set('trust proxy', true);
 
 async function loadConfig(projectDir) {
   const configPath = path.resolve(projectDir, "config.js");
@@ -57,10 +61,9 @@ async function loadSites(sitesConfig) {
   }
 }
 
-
 // global middleware
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+// app.use(express.urlencoded({ extended: true }));
+// app.use(express.json());
 
 app.use((req, res, next) => {
   const host = req.headers.host?.split(":")[0];
