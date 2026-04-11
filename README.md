@@ -2,6 +2,8 @@
 - session regenerate call ruins the csrf helper which is set during context creation--> can this be solved via some post-render callback?
 - need to delve deeper into helmet and test in prod if `upgradeInsecureRequests` causes any problem
 - related to helmet --> the whole end-user `config.js` should prolly use premade environments for caches etc and (allow user defined csp settings on the other hand)
+- add the metadata parsing from original project and apply rate limiting
+- when refactoring config.js --> also make so that metadata is hot-reloaded on dev env
 
 # scripts and stuff:
 
