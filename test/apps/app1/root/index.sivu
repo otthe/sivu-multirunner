@@ -19,3 +19,12 @@
   <?= $csrf($_SESSION) ?>
   <button type="submit">Send</button>
 </form>
+
+<script>
+  alert("unsecure! should not be rendered!");
+</script>
+
+
+<script nonce="<?= $nonce(); ?>">
+  alert("secure! should be rendered!");
+</script>
