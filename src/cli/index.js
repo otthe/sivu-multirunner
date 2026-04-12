@@ -10,6 +10,8 @@ export async function run(argv) {
       return import("./serve.js").then(m => m.run());
     case "init":
       return import("./init.js").then(m => m.run());
+    case "add":
+      return import("./add.js").then(m => m.run());
     default:
       console.log("Unknown command");
   }

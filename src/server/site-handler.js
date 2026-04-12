@@ -13,6 +13,9 @@ import { isTimingSafeEqual } from "../utils/string.js";
 import { renderTemplateByName } from "../sivu/renderer.js";
 import { TemplateExit, TemplateRedirect, TemplateResponse } from "../utils/error.js";
 
+const APP_403_MESSAGE = "Forbidden";
+const APP_404_MESSAGE = "Not found";
+
 function isJsonRequest(req) {
   return req.is("application/json");
 }

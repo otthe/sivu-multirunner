@@ -7,6 +7,8 @@ import fs from "node:fs";
 import { pathToFileURL } from "node:url";
 import { createSiteHandler } from "./site-handler.js";
 import { siteRegistry } from "./registry.js";
+import { sivuConfig } from "../config.js";
+import { createInternalHandler } from "./internal-handler.js";
 
 const sites = {
   "localhost": {
@@ -65,8 +67,10 @@ async function loadSites(sitesConfig) {
 // app.use(express.urlencoded({ extended: true }));
 // app.use(express.json());
 
+// handle only sites that exist
 app.use((req, res, next) => {
   const host = req.headers.host?.split(":")[0];
+
   const site = siteRegistry.get(host);
 
   if (!site) {
@@ -78,10 +82,49 @@ app.use((req, res, next) => {
   return site.handler(req, res, next);
 });
 
+const SOCKET_PATH = "/tmp/sivu.sock";
+
 export async function startServer(config) {
   await loadSites(sites);
 
   app.listen(config.port, () => {
-    console.log(`Sivu server running on port ${config.port} in ${config.env} environment!`);
+    console.log(
+      `Sivu server running on port ${config.port} in ${config.env} environment!`
+    );
+  });
+
+  const internalApp = express();
+
+  const internalHandler = await createInternalHandler();
+
+  internalApp.use("/__sivu/__internal", internalHandler);
+
+  // remove old socket if it exists
+  if (fs.existsSync(SOCKET_PATH)) {
+    fs.unlinkSync(SOCKET_PATH);
+  }
+
+  internalApp.listen(SOCKET_PATH, () => {
+    console.log(`Internal API listening on ${SOCKET_PATH}`);
+  });
+
+  // restrict permissions (VERY IMPORTANT)
+  fs.chmodSync(SOCKET_PATH, 0o600);
+
+  // cleanup on exit
+  const cleanup = () => {
+    if (fs.existsSync(SOCKET_PATH)) {
+      fs.unlinkSync(SOCKET_PATH);
+    }
+  };
+
+  process.on("exit", cleanup);
+  process.on("SIGINT", () => {
+    cleanup();
+    process.exit();
+  });
+  process.on("SIGTERM", () => {
+    cleanup();
+    process.exit();
   });
 }
