@@ -7,7 +7,6 @@ import fs from "node:fs";
 import { pathToFileURL } from "node:url";
 import { createSiteHandler } from "./site-handler.js";
 import { siteRegistry } from "./registry.js";
-import { sivuConfig } from "../config.js";
 import { createInternalHandler } from "./internal-handler.js";
 
 const sites = {

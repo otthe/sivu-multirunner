@@ -4,6 +4,9 @@ import { request } from "../server/internal-handler.js";
 
 export async function run(argv) {
   const command = argv[2];
+  const a1 = argv[3];
+  const a2 = argv[4];
+  const a3 = argv[5];
   await ensureGlobalConfig();
 
   switch (command) {
