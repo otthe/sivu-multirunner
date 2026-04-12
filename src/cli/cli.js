@@ -2,7 +2,7 @@
 import { ensureGlobalConfig, loadConfig } from "../config.js";
 import { request } from "../server/internal-handler.js";
 import { startServer } from "../server/server.js";
-import { pretty, prettyList } from "./print.js";
+import { pretty, prettyList, tableRow } from "./print.js";
 
 export async function run(argv) {
   const command = argv[2];
@@ -78,7 +78,19 @@ async function reload() {
 }
 
 async function info() {
+  const obj = await request("get", pathPrefix+"info");
 
+  for (const key in obj) {
+    const site = obj[key]
+    pretty("          " + key + "          ");
+    pretty("( dir and memory sizes are rough estimations  )");
+    for (const prop in site) {
+      const prettyProp = prop.replace(/_/g, " ");
+      tableRow(prettyProp, site[prop]);
+    }
+  }
+
+  return obj;
 }
 
 //server

@@ -7,6 +7,7 @@ import http from "node:http";
 import { loadConfig, writeConfig } from "../config.js";
 import { loadSites } from "./server.js";
 import { siteRegistry } from "./registry.js";
+import { formatBytes, getFolderSize, getObjectSize } from "../utils/analytics.js";
 
 const SOCKET_PATH = "/tmp/sivu.sock";
 
@@ -107,11 +108,39 @@ export function createInternalHandler() {
     }
   });
 
-  router.get("/info", (req, res) => {
+  router.get("/info", async (req, res) => {
     // for each project:
     // root dir size in mb (disk)
     // cached templates and scripts (ram)
     // info
+    try {
+      let result = {};
+      for (const [key, value] of siteRegistry.entries()) {
+        //console.log(key, value);
+        const site = siteRegistry.get(key);
+        //const size = await dirSize( site.projectDir );
+        const size = await getFolderSize(site.projectDir);
+        const cachedScripts = site.scriptCache.size;
+        const cachedTemplates = site.templateCache.size;
+        const scriptCacheBytes =  getObjectSize(site.scriptCache);
+        const templateCacheBytes = getObjectSize(site.templateCache);
+        const metadataCacheBytes = getObjectSize(site.templateMeta);
+        result[key] = {
+          hostname: site.host,
+          dir: site.projectDir,
+          dir_size_in_mb:formatBytes(size.size),
+          amount_of_cached_scripts: cachedScripts,
+          amount_of_cached_templates: cachedTemplates,
+          script_cache_in_bytes: scriptCacheBytes,
+          template_cache_in_bytes: templateCacheBytes,
+          metadata_cache_in_bytes: metadataCacheBytes
+        }
+      }
+      return res.json(result);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ msg: "Internal error" });
+    }
   });
 
   router.post("/stop", (req, res) => {
