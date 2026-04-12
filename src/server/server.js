@@ -24,7 +24,7 @@ async function loadSiteConfig(projectDir) {
   return mod.default ?? mod;
 }
 
-async function loadSites(sitesConfig) {
+export async function loadSites(sitesConfig) {
   for (const [host, site] of Object.entries(sitesConfig)) {
     try {
       const {config} = await loadSiteConfig(site.projectDir);

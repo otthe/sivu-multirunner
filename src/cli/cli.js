@@ -2,6 +2,7 @@
 import { ensureGlobalConfig, loadConfig } from "../config.js";
 import { request } from "../server/internal-handler.js";
 import { startServer } from "../server/server.js";
+import { pretty, prettyList } from "./print.js";
 
 export async function run(argv) {
   const command = argv[2];
@@ -47,18 +48,33 @@ async function register(hostname) {
   }
 
   const res = await request("POST", pathPrefix+"register", {
-    name: hostname
+    name: hostname,
+    dir: process.cwd(),
   });
-  console.log(res);
+
+  pretty(res.msg);
+  
   return res;
 }
 
 async function unregister(hostname) {
+  if (hostname === undefined) {
+    throw new Error("Unregister command requires [hostname] as parameter!");
+  }
 
+  const res = await request("POST", pathPrefix+"unregister", {
+    name: hostname
+  });
+
+  pretty(res.msg);
 }
 
 async function reload() {
+  const res = await request("post", pathPrefix+"reload", {});
 
+  pretty(res.msg);
+
+  return res;
 }
 
 async function info() {

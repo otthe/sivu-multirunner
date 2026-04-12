@@ -4,7 +4,9 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import express from "express";
 import http from "node:http";
-import { loadConfig } from "../config.js";
+import { loadConfig, writeConfig } from "../config.js";
+import { loadSites } from "./server.js";
+import { siteRegistry } from "./registry.js";
 
 const SOCKET_PATH = "/tmp/sivu.sock";
 
@@ -23,7 +25,15 @@ export function request(method, path, data) {
         let body = "";
 
         res.on("data", (chunk) => (body += chunk));
-        res.on("end", () => resolve(body));
+        //res.on("end", () => resolve(body));
+        res.on("end", () => {
+          try {
+            const json = JSON.parse(body);
+            resolve(json);
+          } catch {
+            resolve(body);
+          }
+        });
       }
     );
 
@@ -46,26 +56,55 @@ export function createInternalHandler() {
 
   //maybe mount/unmount better name?
   router.post("/register", async (req, res) => {
-    const { name } = req.body;
+    try {
+      const { name, dir } = req.body;
 
-    const sites = loadConfig("sivu-sites.json");
-    console.log(sites);
+      const sites = await loadConfig("sivu-sites.json");
+      // console.log(sites);
+      sites.sites[name.trim()] = {
+        projectDir: dir
+      }
+  
+      await writeConfig("sivu-sites.json", sites);
+  
+      const msg = `${name} registered! Run 'sivu reload' to activate it`;
 
-    res.json({ success: true, name });
+      return res.json({ msg});
+    } catch (error) {
+      console.error(error);
+    }
   });
 
-  router.post("/unregister", (req, res) => {
-    const {name} = req.body;
+  router.post("/unregister", async (req, res) => {
+    try {
+      const {name} = req.body;
+      const sites = await loadConfig("sivu-sites.json");
 
-    res.json({success: true, name})
+      delete sites.sites[name.trim()];
+      await writeConfig("sivu-sites.json", sites);
+      siteRegistry.delete(name.trim());
+
+      const msg = `${name} has been removed from site registry!`;      
+      return res.json({msg: msg});
+      
+    } catch (error) {
+      console.error(error);
+    }
+
   });
 
   router.post("/init", (req, res) => {
     res.json({success: true, msg: "project scaffolded!"});
   });
 
-  router.post("/reload", (req, res) => {
-    res.json({success: true, msg: "Sites reloaded"});
+  router.post("/reload", async (req, res) => {
+    try {
+      const {sites} = await loadConfig("sivu-sites.json");
+      await loadSites(sites);
+      return res.json({msg: "Sites reloaded!"});
+    } catch (error) {
+      console.error(error);
+    }
   });
 
   router.get("/info", (req, res) => {
@@ -73,11 +112,6 @@ export function createInternalHandler() {
     // root dir size in mb (disk)
     // cached templates and scripts (ram)
     // info
-  });
-
-  //server
-  router.post("/start", (req, res) => {
-
   });
 
   router.post("/stop", (req, res) => {

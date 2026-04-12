@@ -39,12 +39,24 @@ export async function ensureGlobalConfig() {
 
 export async function loadConfig(configFile) {
   try {
-    const dir = path.join(baseDir, configFile);
-    const data = await fs.readFile(dir);
+    const fp = path.join(baseDir, configFile);
+    const data = await fs.readFile(fp);
     const json = JSON.parse(data);
     return json;
   } catch (error) {
     console.error(error);
+  }
+}
+
+export async function writeConfig(configFile, configData){
+  try {
+    const fp = path.join(baseDir, configFile);
+    await fs.writeFile(
+      fp,
+      JSON.stringify(configData, null, 2) 
+    );
+  } catch (error) {
+    console.error(error);    
   }
 }
 
