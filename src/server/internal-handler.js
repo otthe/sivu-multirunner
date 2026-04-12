@@ -58,6 +58,10 @@ export function createInternalHandler() {
     res.json({success: true, name})
   });
 
+  router.post("/init", (req, res) => {
+    res.json({success: true, msg: "project scaffolded!"});
+  });
+
   router.post("/reload", (req, res) => {
     res.json({success: true, msg: "Sites reloaded"});
   });
