@@ -17,7 +17,6 @@ export async function ensureGlobalConfig() {
   try {
     await fs.access(sitesPath);
     await fs.access(configPath);
-    pretty(`Config files located at ${baseDir}`);
   } catch {
     pretty("Generating default config...");
 

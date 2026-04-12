@@ -6,8 +6,6 @@ import { pretty, prettyList, tableRow } from "./print.js";
 
 export async function run(argv) {
   const command = argv[2];
-  console.log(argv);
-  console.log(process.cwd());
   const a1 = argv[3];
   const a2 = argv[4];
   const a3 = argv[5];

@@ -14,7 +14,7 @@ export function prettyList(msg) {
 export function tableRow(key, value) {
   const wrapped = `| ${key}:  | ${value}  | `;
   const sep = ".".repeat(wrapped.length);
-  console.log(sep);
+  //console.log(sep);
   console.log(wrapped);
   console.log(sep);
 }
