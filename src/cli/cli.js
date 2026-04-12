@@ -1,8 +1,10 @@
 // root to call in bin
+import { ensureGlobalConfig } from "../config.js";
 import { request } from "../server/internal-handler.js";
 
 export async function run(argv) {
   const command = argv[2];
+  await ensureGlobalConfig();
 
   switch (command) {
     //sites
@@ -28,13 +30,15 @@ export async function run(argv) {
   }
 }
 
+const pathPrefix="/__sivu/__internal/";
+
 //sites
 async function init(location, projectName) {
 
 }
 
 async function register(hostname, path) {
-  const res = await request("POST", "/__sivu/__internal/register", {
+  const res = await request("POST", pathPrefix+"register", {
     name: "test-site",
   });
   console.log(res);
