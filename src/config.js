@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
+import { pretty } from "./cli/print.js";
 
 const baseDir =
   process.platform === "win32"
@@ -9,15 +10,6 @@ const baseDir =
 
 const sitesPath = path.join(baseDir, "sivu-sites.json");
 const configPath = path.join(baseDir, "sivu-config.json");
-
-
-function pretty(msg) {
-  const wrapped = "| " + msg + " |";
-  const sep = "=".repeat(wrapped.length);
-  console.log(sep);
-  console.log(wrapped);
-  console.log(sep);
-}
 
 export async function ensureGlobalConfig() {
   // ensure directory exists
@@ -43,6 +35,17 @@ export async function ensureGlobalConfig() {
   }
 
   return {sitesPath, configPath};
+}
+
+export async function loadConfig(configFile) {
+  try {
+    const dir = path.join(baseDir, configFile);
+    const data = await fs.readFile(dir);
+    const json = JSON.parse(data);
+    return json;
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 const defaultSites = {

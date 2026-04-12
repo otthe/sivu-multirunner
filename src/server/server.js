@@ -8,23 +8,12 @@ import { pathToFileURL } from "node:url";
 import { createSiteHandler } from "./site-handler.js";
 import { siteRegistry } from "./registry.js";
 import { createInternalHandler } from "./internal-handler.js";
-
-const sites = {
-  "localhost": {
-    projectDir: "/home/null/Desktop/projects/sivu-multirunner/test/apps/app1/",
-  },
-  "app1.test": {
-    projectDir: "/home/null/Desktop/projects/sivu-multirunner/test/apps/app1/",
-  },
-  "app2.test": {
-    projectDir: "/home/null/Desktop/projects/sivu-multirunner/test/apps/app2/",
-  }
-};
+import { pretty, prettyList } from "../cli/print.js";
 
 const app = express();
 app.set('trust proxy', true);
 
-async function loadConfig(projectDir) {
+async function loadSiteConfig(projectDir) {
   const configPath = path.resolve(projectDir, "config.js");
   const url = pathToFileURL(configPath).href;
 
@@ -38,7 +27,7 @@ async function loadConfig(projectDir) {
 async function loadSites(sitesConfig) {
   for (const [host, site] of Object.entries(sitesConfig)) {
     try {
-      const {config} = await loadConfig(site.projectDir);
+      const {config} = await loadSiteConfig(site.projectDir);
       
       const siteInfo = {
         host,
@@ -56,6 +45,9 @@ async function loadSites(sitesConfig) {
       siteInfo.handler = createSiteHandler(siteInfo);
 
       siteRegistry.set(host, siteInfo);
+
+      prettyList(`Loaded: ${host} at ${site.projectDir}`);
+      
     } catch (err) {
       console.error(`Failed to load ${host}:`, err);
     }
@@ -84,10 +76,10 @@ app.use((req, res, next) => {
 const SOCKET_PATH = "/tmp/sivu.sock";
 
 export async function startServer(config) {
-  await loadSites(sites);
+  await loadSites(config.sites);
 
   app.listen(config.port, () => {
-    console.log(
+    pretty(
       `Sivu server running on port ${config.port} in ${config.env} environment!`
     );
   });
@@ -104,7 +96,7 @@ export async function startServer(config) {
   }
 
   internalApp.listen(SOCKET_PATH, () => {
-    console.log(`Internal API listening on ${SOCKET_PATH}`);
+    pretty(`Internal API listening on ${SOCKET_PATH}`);
   });
 
   // restrict permissions (VERY IMPORTANT)

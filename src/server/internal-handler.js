@@ -4,6 +4,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import express from "express";
 import http from "node:http";
+import { loadConfig } from "../config.js";
 
 const SOCKET_PATH = "/tmp/sivu.sock";
 
@@ -44,10 +45,11 @@ export function createInternalHandler() {
   //sites
 
   //maybe mount/unmount better name?
-  router.post("/register", (req, res) => {
+  router.post("/register", async (req, res) => {
     const { name } = req.body;
 
-    console.log("Register called with:", name);
+    const sites = loadConfig("sivu-sites.json");
+    console.log(sites);
 
     res.json({ success: true, name });
   });
@@ -80,12 +82,6 @@ export function createInternalHandler() {
 
   router.post("/stop", (req, res) => {
 
-  });
-
-  router.get("/status", (req, res) => {
-    //server status
-    //version
-    //locations (config etc)
   });
 
   return router;
