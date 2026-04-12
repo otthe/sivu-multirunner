@@ -1,8 +1,12 @@
 // root to call in bin
+import fs from "node:fs";
+
 import { ensureGlobalConfig, loadConfig } from "../config.js";
 import { request } from "../server/internal-handler.js";
 import { startServer } from "../server/server.js";
 import { pretty, prettyList, tableRow } from "./print.js";
+
+const pathPrefix="/__sivu/__internal/";
 
 export async function run(argv) {
   const command = argv[2];
@@ -14,7 +18,7 @@ export async function run(argv) {
   switch (command) {
     //sites
     case "init":
-      return await init(null, null);
+      return await init(a1);//todo
     case "register":
       return await register(a1);
     case "unregister":
@@ -27,16 +31,14 @@ export async function run(argv) {
     case "start":
       return await start(a1);
     case "stop":
-      return await stop(null);
+      return await stop();
     default:
       console.log("Unknown command");
   }
 }
 
-const pathPrefix="/__sivu/__internal/";
-
 //sites
-async function init(location, projectName) {
+async function init(projectName) {
 
 }
 
@@ -102,6 +104,20 @@ async function start(env) {
   }
 }
 
-async function stop(env) {
+async function stop() {
+  const PID_FILE = "/tmp/sivu.pid";
 
+  if (!fs.existsSync(PID_FILE)) {
+    console.log("Sivu is not running");
+    return;
+  }
+
+  const pid = parseInt(fs.readFileSync(PID_FILE, "utf-8"), 10);
+
+  try {
+    process.kill(pid, "SIGTERM");
+    console.log("Sivu stopped");
+  } catch (err) {
+    console.error("Failed to stop:", err.message);
+  }
 }

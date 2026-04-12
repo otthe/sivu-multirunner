@@ -90,6 +90,11 @@ export async function startServer(config) {
 
   internalApp.use("/__sivu/__internal", internalHandler);
 
+  // write pid to file
+  const PID_FILE = "/tmp/sivu.pid";
+  fs.writeFileSync(PID_FILE, process.pid.toString());
+  console.log("PID:", process.pid);
+
   // remove old socket if it exists
   if (fs.existsSync(SOCKET_PATH)) {
     fs.unlinkSync(SOCKET_PATH);
@@ -106,6 +111,9 @@ export async function startServer(config) {
   const cleanup = () => {
     if (fs.existsSync(SOCKET_PATH)) {
       fs.unlinkSync(SOCKET_PATH);
+    }
+    if (fs.existsSync(PID_FILE)) {
+      fs.unlinkSync(PID_FILE);
     }
   };
 
