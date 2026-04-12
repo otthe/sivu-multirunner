@@ -41,12 +41,47 @@ export function createInternalHandler() {
 
   router.use(express.json());
 
+  //sites
+
+  //maybe mount/unmount better name?
   router.post("/register", (req, res) => {
     const { name } = req.body;
 
     console.log("Register called with:", name);
 
     res.json({ success: true, name });
+  });
+
+  router.post("/unregister", (req, res) => {
+    const {name} = req.body;
+
+    res.json({success: true, name})
+  });
+
+  router.post("/reload", (req, res) => {
+    res.json({success: true, msg: "Sites reloaded"});
+  });
+
+  router.get("/info", (req, res) => {
+    // for each project:
+    // root dir size in mb (disk)
+    // cached templates and scripts (ram)
+    // info
+  });
+
+  //server
+  router.post("/start", (req, res) => {
+
+  });
+
+  router.post("/stop", (req, res) => {
+
+  });
+
+  router.get("/status", (req, res) => {
+    //server status
+    //version
+    //locations (config etc)
   });
 
   return router;
