@@ -48,6 +48,8 @@ export async function run(argv) {
       return await start(a1);
     case "stop":
       return await stop();
+    case "status":
+      return await status();
     default:
       console.log("Unknown command");
   }
@@ -125,6 +127,11 @@ async function start(env) {
     console.log("Use systemctl to start Sivu in production");
     return;
   }
+  const PID_FILE = "/tmp/sivu.pid";
+  if (fs.existsSync(PID_FILE)) {
+    console.log("Sivu is already running! -- 'sivu status' for more information!");
+    return;
+  }
 
   const config = await loadConfig("sivu-config.json");
 
@@ -164,5 +171,23 @@ async function stop() {
     console.log("Sivu stopped");
   } catch (err) {
     console.error("Failed to stop:", err.message);
+  }
+}
+
+async function status() {
+  const PID_FILE = "/tmp/sivu.pid";
+
+  if (!fs.existsSync(PID_FILE)) {
+    console.log("Sivu is not running");
+    return;
+  }
+
+  const pid = parseInt(fs.readFileSync(PID_FILE, "utf-8"), 10);
+
+  try {
+    process.kill(pid, 0);
+    console.log(`Sivu is running (PID: ${pid})`);
+  } catch {
+    console.log("Sivu not running but PID file exists");
   }
 }
