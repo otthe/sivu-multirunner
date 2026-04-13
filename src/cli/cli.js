@@ -3,6 +3,7 @@ import fs from "node:fs";
 import { spawn, execSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from 'url';
+import os from "node:os";
 
 import { ensureGlobalConfig, loadConfig } from "../config.js";
 import { request } from "../server/internal-handler.js";
@@ -190,56 +191,7 @@ async function status() {
   }
 }
 
-// support only posix for now
-// async function install(){
-//   // if (process.getuid && process.getuid !== 0) {
-//   //   console.log("Please run with sudo: sudo sivu install");
-//   //   return;
-//   // }
-
-//   const __dirname = getDirName();
-
-//   const serverPath = path.resolve(__dirname, "../serveexecSyncr/server.js");
-//   const servicePath = "/etc/systemd/system/sivu.service";
-//   const nodePath = process.execPath;
-// //ExecStart=/usr/bin/node ${serverPath} production
-
-//   const service = `
-//   [Unit]
-//   Description=Sivu Server
-//   After=network.target
-  
-//   [Service]
-//   ExecStart=${nodePath} ${serverPath} production
-//   WorkingDirectory=${process.cwd()}
-//   Restart=always
-//   RestartSec=3
-//   User=${process.env.SUDO_USER || "root"}
-//   Environment=NODE_ENV=production
-  
-//   [Install]
-//   WantedBy=multi-user.target
-//   `;
-
-//   try {
-//     fs.writeFileSync(servicePath, service.trim());
-//     console.log("Service file written to", servicePath);
-
-//     execSync("sudo systemctl daemon-reload");
-//     execSync("sudo systemctl enable sivu");
-//     execSync("sudo systemctl start sivu");
-
-//     console.log("Sivu installed and started!");
-//     console.log("");
-//     console.log("Manage with:");
-//     console.log("  sudo systemctl status sivu");
-//     console.log("  sudo systemctl stop sivu");
-//     console.log("  sudo systemctl restart sivu");
-//   } catch (error) {
-//     console.error("Install failed:", error.message);
-//   }
-// }
-
+//posix support only!
 async function install() {
   const __dirname = getDirName();
 
@@ -249,21 +201,29 @@ async function install() {
 
   const projectDir = path.resolve(__dirname, "../..");
 
+  const user = process.env.SUDO_USER || process.env.USER;
+  const homeDir = os.homedir();
+  const sivuHome = path.join(homeDir, ".sivu");
+
   const service = `
-[Unit]
-Description=Sivu Server
-After=network.target
-
-[Service]
-ExecStart=${nodePath} ${serverPath} production
-WorkingDirectory=${projectDir}
-Restart=always
-RestartSec=3
-User=${process.env.SUDO_USER || "root"}
-
-[Install]
-WantedBy=multi-user.target
-`;
+  [Unit]
+  Description=Sivu Server
+  After=network.target
+  
+  [Service]
+  ExecStart=${nodePath} ${serverPath} production
+  WorkingDirectory=${projectDir}
+  
+  Restart=always
+  RestartSec=3
+  
+  User=${user}
+  Environment=NODE_ENV=production
+  Environment=SIVU_HOME=${sivuHome}
+  
+  [Install]
+  WantedBy=multi-user.target
+  `;
 
   try {
     execSync(

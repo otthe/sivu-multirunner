@@ -24,6 +24,8 @@
 #### sudo env "PATH=$PATH" sivu install
 #### sudo $(which sivu) install
 
+#### journalctl -u sivu
+
 #### symlink clean:
 rm -f $(npm bin -g)/sivu
 ls $(npm bin -g)
