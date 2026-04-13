@@ -9,6 +9,7 @@ import { requireRuntime, TemplateExit, TemplateRedirect, TemplateResponse } from
 import { resolveIncludePath, resolveUnderTemplateDir } from "../utils/path.js";
 import { stripLeadingSlashes } from "../utils/string.js";
 import { compileTemplateString } from "./parser.js";
+import { pruneCache } from "./cache.js";
 
 const INCLUDE_TOKEN = /<\?include\s+["']([\s\S]*?)["']\s*\?>/g;
 const LAYOUT_FILE = "_layout.sivu";

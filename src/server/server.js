@@ -73,9 +73,10 @@ app.use((req, res, next) => {
   return site.handler(req, res, next);
 });
 
-const SOCKET_PATH = "/tmp/sivu.sock";
-
 export async function startServer(config) {
+  const SOCKET_PATH = "/tmp/sivu.sock";
+  const PID_FILE = "/tmp/sivu.pid";
+
   await loadSites(config.sites);
 
   app.listen(config.port, () => {
@@ -91,7 +92,7 @@ export async function startServer(config) {
   internalApp.use("/__sivu/__internal", internalHandler);
 
   // write pid to file
-  const PID_FILE = "/tmp/sivu.pid";
+
   fs.writeFileSync(PID_FILE, process.pid.toString());
   console.log("PID:", process.pid);
 
