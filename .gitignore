@@ -2,3 +2,5 @@ node_modules
 dump.txt
 .env
 log
+.kdev4
+*.kdev4
