@@ -9,6 +9,7 @@ import { createSiteHandler } from "./site-handler.js";
 import { siteRegistry } from "./registry.js";
 import { createInternalHandler } from "./internal-handler.js";
 import { pretty, prettyList } from "../cli/print.js";
+import { loadConfig } from "../config.js";
 
 const app = express();
 app.set('trust proxy', true);
@@ -77,24 +78,24 @@ export async function startServer(config) {
   const SOCKET_PATH = "/tmp/sivu.sock";
   const PID_FILE = "/tmp/sivu.pid";
 
+  if (fs.existsSync(PID_FILE)) {
+    console.log("Server already running?");
+  }
+
   await loadSites(config.sites);
 
   app.listen(config.port, () => {
     pretty(
       `Sivu server running on port ${config.port} in ${config.env} environment!`
     );
+
+    fs.writeFileSync(PID_FILE, process.pid.toString());
+    console.log("PID:", process.pid);
   });
 
   const internalApp = express();
-
   const internalHandler = await createInternalHandler();
-
   internalApp.use("/__sivu/__internal", internalHandler);
-
-  // write pid to file
-
-  fs.writeFileSync(PID_FILE, process.pid.toString());
-  console.log("PID:", process.pid);
 
   // remove old socket if it exists
   if (fs.existsSync(SOCKET_PATH)) {
@@ -126,5 +127,31 @@ export async function startServer(config) {
   process.on("SIGTERM", () => {
     cleanup();
     process.exit();
+  });
+}
+
+async function run() {
+  const env = process.argv[2] || "DEVELOPMENT";
+
+  const config = await loadConfig("sivu-config.json");
+  const { sites } = await loadConfig("sivu-sites.json");
+
+  if (!config.server.env[env]) {
+    throw new Error(`Unknown environment: ${env}`);
+  }
+
+  await startServer({
+    port: config.server.env[env].port,
+    env,
+    sites,
+  });
+}
+
+//for cli start
+//should only run on direct call like 'node server.js'
+if (import.meta.url === `file://${process.argv[1]}`) {
+  run().catch((err) => {
+    console.error(err);
+    process.exit(1);
   });
 }

@@ -1,5 +1,8 @@
 // root to call in bin
 import fs from "node:fs";
+import { spawn } from "node:child_process";
+import path from "node:path";
+import { fileURLToPath } from 'url';
 
 import { ensureGlobalConfig, loadConfig } from "../config.js";
 import { request } from "../server/internal-handler.js";
@@ -7,6 +10,19 @@ import { startServer } from "../server/server.js";
 import { pretty, prettyList, tableRow } from "./print.js";
 
 const pathPrefix="/__sivu/__internal/";
+
+// is this even needed??
+// currently undefined
+function isProd() {
+  return process.env.NODE_ENV === "production";
+}
+
+//module quirks...
+function getDirName(){
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename)
+  return __dirname;
+}
 
 export async function run(argv) {
   const command = argv[2];
@@ -94,14 +110,43 @@ async function info() {
 }
 
 //server
+// async function start(env) {
+//   const config = await loadConfig("sivu-config.json");
+//   const {sites} = await loadConfig("sivu-sites.json");
+//   if (config.server.env[env]) {
+//     startServer({port: config.server.env[env].port, env: env, sites: sites});
+//   } else {
+//     throw new Error(`Could not find environment ${env} -- check sivu-sites.json`);
+//   }
+// }
+
 async function start(env) {
-  const config = await loadConfig("sivu-config.json");
-  const {sites} = await loadConfig("sivu-sites.json");
-  if (config.server.env[env]) {
-    startServer({port: config.server.env[env].port, env: env, sites: sites});
-  } else {
-    throw new Error(`Could not find environment ${env} -- check sivu-sites.json`);
+  if (isProd()) {
+    console.log("Use systemctl to start Sivu in production");
+    return;
   }
+
+  const config = await loadConfig("sivu-config.json");
+
+  if (!config.server.env[env]) {
+    throw new Error(`Could not find environment ${env}`);
+  }
+
+  //const serverPath = path.resolve("./server.js");
+  const serverPath = path.join(getDirName(), "../server/server.js");
+
+  const out = fs.openSync("/tmp/sivu.log", "a");
+  const err = fs.openSync("/tmp/sivu.err", "a");
+
+  const child = spawn(process.execPath, [serverPath, env], {
+    detached: true,
+    stdio: ["ignore", out, err],
+    cwd: process.cwd(),
+  });
+
+  child.unref();
+
+  console.log(`Sivu started in ${env} mode`);
 }
 
 async function stop() {
