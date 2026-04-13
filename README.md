@@ -21,6 +21,9 @@
 
 #### https://dev.to/erinbush/npm-linking-and-unlinking-2h1g
 
+#### sudo env "PATH=$PATH" sivu install
+#### sudo $(which sivu) install
+
 #### symlink clean:
 rm -f $(npm bin -g)/sivu
 ls $(npm bin -g)

@@ -68,11 +68,11 @@ const defaultSites = {
 const defaultConfig = {
   "server": {
     "env": {
-      "DEVELOPMENT": {
+      "development": {
         "port": 3000,
         "sitePath": sitesPath
       },
-      "PRODUCTION": {
+      "production": {
         "port": 3000,
         "sitePath": sitesPath
       },

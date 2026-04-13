@@ -106,8 +106,7 @@ export async function startServer(config) {
     pretty(`Internal API listening on ${SOCKET_PATH}`);
   });
 
-  // restrict permissions (VERY IMPORTANT)
-  fs.chmodSync(SOCKET_PATH, 0o600);
+  fs.chmodSync(SOCKET_PATH, 0o666);
 
   // cleanup on exit
   const cleanup = () => {

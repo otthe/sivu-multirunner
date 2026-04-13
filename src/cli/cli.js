@@ -1,6 +1,6 @@
 // root to call in bin
 import fs from "node:fs";
-import { spawn } from "node:child_process";
+import { spawn, execSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from 'url';
 
@@ -11,8 +11,6 @@ import { pretty, prettyList, tableRow } from "./print.js";
 
 const pathPrefix="/__sivu/__internal/";
 
-// is this even needed??
-// currently undefined
 function isProd() {
   return process.env.NODE_ENV === "production";
 }
@@ -43,6 +41,7 @@ export async function run(argv) {
       return await reload();
     case "info":
       return await info();
+
     //server
     case "start":
       return await start(a1);
@@ -50,6 +49,10 @@ export async function run(argv) {
       return await stop();
     case "status":
       return await status();
+    case "install":
+      return await install();
+    case "uninstall":
+      return await uninstall();
     default:
       console.log("Unknown command");
   }
@@ -110,18 +113,9 @@ async function info() {
 
   return obj;
 }
-
-//server
-// async function start(env) {
-//   const config = await loadConfig("sivu-config.json");
-//   const {sites} = await loadConfig("sivu-sites.json");
-//   if (config.server.env[env]) {
-//     startServer({port: config.server.env[env].port, env: env, sites: sites});
-//   } else {
-//     throw new Error(`Could not find environment ${env} -- check sivu-sites.json`);
-//   }
-// }
-
+// // ================================
+//        server
+// // ================================
 async function start(env) {
   if (isProd()) {
     console.log("Use systemctl to start Sivu in production");
@@ -139,7 +133,6 @@ async function start(env) {
     throw new Error(`Could not find environment ${env}`);
   }
 
-  //const serverPath = path.resolve("./server.js");
   const serverPath = path.join(getDirName(), "../server/server.js");
 
   const out = fs.openSync("/tmp/sivu.log", "a");
@@ -157,6 +150,11 @@ async function start(env) {
 }
 
 async function stop() {
+  if (isProd()) {
+    execSync("sudo systemctl stop sivu");
+    return;
+  }
+
   const PID_FILE = "/tmp/sivu.pid";
 
   if (!fs.existsSync(PID_FILE)) {
@@ -190,4 +188,110 @@ async function status() {
   } catch {
     console.log("Sivu not running but PID file exists");
   }
+}
+
+// support only posix for now
+// async function install(){
+//   // if (process.getuid && process.getuid !== 0) {
+//   //   console.log("Please run with sudo: sudo sivu install");
+//   //   return;
+//   // }
+
+//   const __dirname = getDirName();
+
+//   const serverPath = path.resolve(__dirname, "../serveexecSyncr/server.js");
+//   const servicePath = "/etc/systemd/system/sivu.service";
+//   const nodePath = process.execPath;
+// //ExecStart=/usr/bin/node ${serverPath} production
+
+//   const service = `
+//   [Unit]
+//   Description=Sivu Server
+//   After=network.target
+  
+//   [Service]
+//   ExecStart=${nodePath} ${serverPath} production
+//   WorkingDirectory=${process.cwd()}
+//   Restart=always
+//   RestartSec=3
+//   User=${process.env.SUDO_USER || "root"}
+//   Environment=NODE_ENV=production
+  
+//   [Install]
+//   WantedBy=multi-user.target
+//   `;
+
+//   try {
+//     fs.writeFileSync(servicePath, service.trim());
+//     console.log("Service file written to", servicePath);
+
+//     execSync("sudo systemctl daemon-reload");
+//     execSync("sudo systemctl enable sivu");
+//     execSync("sudo systemctl start sivu");
+
+//     console.log("Sivu installed and started!");
+//     console.log("");
+//     console.log("Manage with:");
+//     console.log("  sudo systemctl status sivu");
+//     console.log("  sudo systemctl stop sivu");
+//     console.log("  sudo systemctl restart sivu");
+//   } catch (error) {
+//     console.error("Install failed:", error.message);
+//   }
+// }
+
+async function install() {
+  const __dirname = getDirName();
+
+  const serverPath = path.resolve(__dirname, "../server/server.js");
+  const servicePath = "/etc/systemd/system/sivu.service";
+  const nodePath = process.execPath;
+
+  const projectDir = path.resolve(__dirname, "../..");
+
+  const service = `
+[Unit]
+Description=Sivu Server
+After=network.target
+
+[Service]
+ExecStart=${nodePath} ${serverPath} production
+WorkingDirectory=${projectDir}
+Restart=always
+RestartSec=3
+User=${process.env.SUDO_USER || "root"}
+
+[Install]
+WantedBy=multi-user.target
+`;
+
+  try {
+    execSync(
+      `echo ${JSON.stringify(service.trim())} | sudo tee ${servicePath} > /dev/null`
+    );
+
+    execSync("sudo systemctl daemon-reload");
+    execSync("sudo systemctl enable sivu");
+    execSync("sudo systemctl start sivu");
+
+    console.log("Sivu installed and started!");
+  } catch (error) {
+    console.error("Install failed:", error.message);
+  }
+}
+
+async function uninstall() {
+  // if (process.getuid && process.getuid() !== 0) {
+  //   console.log("Run with sudo");
+  //   return;
+  // }
+
+  execSync("sudo systemctl stop sivu");
+  execSync("sudo systemctl disable sivu");
+
+  fs.unlinkSync("/etc/systemd/system/sivu.service");
+
+  execSync("sudo systemctl daemon-reload");
+
+  console.log("Sivu uninstalled");
 }
