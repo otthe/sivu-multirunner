@@ -3,10 +3,16 @@ import path from "node:path";
 import os from "node:os";
 import { pretty } from "./cli/print.js";
 
+// const baseDir =
+//   process.platform === "win32"
+//     ? path.join(process.env.APPDATA, "sivu")
+//     : path.join(os.homedir(), ".sivu");
+
+// lock config path globally for now
+// const baseDir = path.join(os.homedir(), ".sivu");
 const baseDir =
-  process.platform === "win32"
-    ? path.join(process.env.APPDATA, "sivu")
-    : path.join(os.homedir(), ".sivu");
+  process.env.SIVU_HOME ||
+  path.join(os.homedir(), ".sivu");
 
 const sitesPath = path.join(baseDir, "sivu-sites.json");
 const configPath = path.join(baseDir, "sivu-config.json");
@@ -68,11 +74,11 @@ const defaultSites = {
 const defaultConfig = {
   "server": {
     "env": {
-      "DEVELOPMENT": {
+      "development": {
         "port": 3000,
         "sitePath": sitesPath
       },
-      "PRODUCTION": {
+      "production": {
         "port": 3000,
         "sitePath": sitesPath
       },
