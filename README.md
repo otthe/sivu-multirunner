@@ -39,6 +39,13 @@ http://site1.test:3000
 http://site2.test:3000
 
 
+### delete service
+```
+sudo systemctl stop sivu
+sudo systemctl disable sivu
+sudo rm /etc/systemd/system/sivu.service
+sudo systemctl daemon-reload
+```
 
 # ideas:
 
