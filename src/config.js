@@ -75,14 +75,14 @@ const defaultConfig = {
   "server": {
     "env": {
       "development": {
-        "port": 5555,
+        "port": 4545,
         "sitePath": sitesPath,
         "logging": true,
         "error_log_path": "/var/log/sivu.err",
         "access_log_path": "/var/log/sivu.log",
       },
       "production": {
-        "port": 6666,
+        "port": 4646,
         "sitePath": sitesPath,
         "logging": true,
         "error_log_path": "/var/log/sivu.err",
