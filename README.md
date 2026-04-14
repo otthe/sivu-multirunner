@@ -5,6 +5,7 @@
 - move BIF's and superglobals out of `createContext()`
 - (LATER) keep in mind that this might need child process support later on so site spesific data should be easily splittable to support that architecture
 ### server
+- db storage for sessions!!!
 - need to delve deeper into helmet and test in prod if `upgradeInsecureRequests` causes any problem
 - related to helmet --> the whole end-user `config.js` should prolly use premade environments for caches etc and (allow user defined csp settings on the other hand)
 - add the metadata parsing from original project and apply rate limiting
@@ -39,6 +40,13 @@ http://site1.test:3000
 http://site2.test:3000
 
 
+### delete service
+```
+sudo systemctl stop sivu
+sudo systemctl disable sivu
+sudo rm /etc/systemd/system/sivu.service
+sudo systemctl daemon-reload
+```
 
 # ideas:
 

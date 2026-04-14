@@ -200,6 +200,16 @@ async function install() {
   const nodePath = process.execPath;
 
   const projectDir = path.resolve(__dirname, "../..");
+  
+  const config = await loadConfig("sivu-config.json");
+  let loggingSettings = '';
+  if (config.server.env["production"].logging) {
+    loggingSettings = 
+    `
+    StandardOutput=append:${config.server.env["production"].access_log_path}
+    StandardError=append:${config.server.env["production"].error_log_path}
+    `;
+  }
 
   const user = process.env.SUDO_USER || process.env.USER;
   const homeDir = os.homedir();
@@ -220,6 +230,8 @@ async function install() {
   User=${user}
   Environment=NODE_ENV=production
   Environment=SIVU_HOME=${sivuHome}
+
+  ${loggingSettings}
   
   [Install]
   WantedBy=multi-user.target

@@ -73,6 +73,7 @@ export function createInternalHandler() {
       return res.json({ msg});
     } catch (error) {
       console.error(error);
+      return res.status(500).json({ msg: "Internal error" });
     }
   });
 
@@ -90,6 +91,7 @@ export function createInternalHandler() {
       
     } catch (error) {
       console.error(error);
+      return res.status(500).json({ msg: "Internal error" });
     }
 
   });
@@ -105,6 +107,7 @@ export function createInternalHandler() {
       return res.json({msg: "Sites reloaded!"});
     } catch (error) {
       console.error(error);
+      return res.status(500).json({ msg: "Internal error" });
     }
   });
 
@@ -141,10 +144,6 @@ export function createInternalHandler() {
       console.error(error);
       return res.status(500).json({ msg: "Internal error" });
     }
-  });
-
-  router.post("/stop", (req, res) => {
-
   });
 
   return router;

@@ -130,7 +130,7 @@ export async function startServer(config) {
 }
 
 async function run() {
-  const env = process.argv[2] || "DEVELOPMENT";
+  const env = process.argv[2] || "development";
 
   const config = await loadConfig("sivu-config.json");
   const { sites } = await loadConfig("sivu-sites.json");

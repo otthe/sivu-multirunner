@@ -7,7 +7,7 @@ import { startServer } from "../src/server/server.js";
 const {sites} = await loadConfig("sivu-sites.json");
 const config = {
   port: 3000,
-  env: 'DEVELOPMENT_AUTOLOAD',
+  env: 'development_autoload',
   sites: sites,
 };
 startServer(config);
